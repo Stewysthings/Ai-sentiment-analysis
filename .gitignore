@@ -12,3 +12,8 @@ results/
 
 # Environment
 .env
+# Secrets
+.env
+*.env
+secrets.json
+config.yaml
