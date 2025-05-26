@@ -1,19 +1,28 @@
 ﻿# Python
+.venv/
 __pycache__/
 *.py[cod]
-venv/
-
-# Data
-data/
-results/
-
-# Logs
-*.log
+.python-version
 
 # Environment
 .env
-# Secrets
-.env
-*.env
-secrets.json
-config.yaml
+.env.local
+
+# Data files
+models/*.pkl
+data/
+*.pickle
+
+# Logs and debug
+*.log
+*.tmp
+*.temp
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,19 +1,28 @@
-﻿# Use official Python image
+﻿# Build stage
+FROM python:3.9-slim as builder
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Runtime stage
 FROM python:3.9-slim
 
-# Set working directory
 WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+COPY . .
 
-# Copy only necessary files
-COPY requirements.txt .
-COPY app.py .
-COPY models/ ./models/
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONPATH=/app \
+    FLASK_APP=app.py \
+    FLASK_ENV=production
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:5000/health || exit 1
 
-# Expose API port
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Use gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
