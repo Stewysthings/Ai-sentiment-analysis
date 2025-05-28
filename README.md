@@ -1,5 +1,5 @@
-# Update README.md with this template (replace placeholders)
-@"
+
+
 # 🔍 AI Sentiment Analysis API
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue)
@@ -13,16 +13,16 @@
 - CI/CD via GitHub Actions
 
 ## 🛠️ Quick Start
-\`\`\`bash
+
 docker build -t sentiment-api . && docker run -p 5000:5000 sentiment-api
-\`\`\`
+
 
 ## 📂 Project Structure
-\`\`\`
-.
+
+
 ├── app.py          # Flask API
 ├── train.py       # Model training
 ├── Dockerfile     # Production setup
 └── requirements.txt
-\`\`\`
-"@ | Out-File -Encoding utf8 README.md
+
+ | Out-File -Encoding utf8 README.md
