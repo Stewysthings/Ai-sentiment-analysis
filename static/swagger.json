@@ -1,0 +1,68 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sentiment Analysis API",
+        "version": "1.0",
+        "description": "Predicts text sentiment using ML model"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000",
+            "description": "Local development"
+        }
+    ],
+    "paths": {
+        "/predict": {
+            "post": {
+                "summary": "Analyze text sentiment",
+                "security": [{"ApiKeyAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {"type": "string"}
+                                },
+                                "required": ["text"],
+                                "example": {"text": "This product is amazing!"}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful prediction",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sentiment": {"type": "string"},
+                                        "confidence": {"type": "number"},
+                                        "model_version": {"type": "string"}
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Missing/invalid API key"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-KEY"
+            }
+        }
+    }
+}

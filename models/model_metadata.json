@@ -1,0 +1,46 @@
+{
+    "version": "1.0.0",
+    "training_date": "2023-01-01",
+    "last_updated": "2023-11-20",
+    "model_type": "sentiment-analysis",
+    "algorithm": {
+        "name": "LogisticRegression",
+        "library": "scikit-learn",
+        "version": "1.2.2"
+    },
+    "training_data": {
+        "source": "Custom Dataset",
+        "size": 15000,
+        "class_distribution": {
+            "positive": 45,
+            "negative": 35,
+            "neutral": 20
+        },
+        "language": "English"
+    },
+    "performance_metrics": {
+        "accuracy": 0.89,
+        "precision": 0.88,
+        "recall": 0.87,
+        "f1_score": 0.875,
+        "confusion_matrix": {
+            "true_positive": 1340,
+            "false_positive": 120,
+            "true_negative": 1280,
+            "false_negative": 160
+        }
+    },
+    "feature_engineering": {
+        "vectorizer": "TF-IDF",
+        "ngram_range": [1, 2],
+        "max_features": 5000,
+        "preprocessing": [
+            "lowercasing",
+            "punctuation removal",
+            "stopword removal"
+        ]
+    },
+    "authors": ["Your Name/Team"],
+    "license": "Proprietary",
+    "contact": "your.email@example.com"
+}
