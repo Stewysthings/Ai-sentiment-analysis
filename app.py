@@ -1,10 +1,9 @@
-﻿import os
-import logging
+﻿import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask, request, jsonify, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
-import joblib
-import sklearn
+import os
+from transformers import pipeline
 from config import Config
 
 # Initialize Flask app
@@ -54,9 +53,13 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=Config.SWAGGER_URL)
 
 # ===== Model Loading =====
 try:
-    model = joblib.load(Config.MODEL_PATH)
-    vectorizer = joblib.load(Config.VECTORIZER_PATH)
-    app.logger.info(f"Models loaded successfully (scikit-learn v{sklearn.__version__})")
+    model_path = os.path.join(Config.MODEL_PATH, "distilbert")
+    if not os.path.exists(model_path):
+        sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+        sentiment_analyzer.save_pretrained(model_path)
+    else:
+        sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
+    app.logger.info("Transformer model loaded successfully")
 except Exception as e:
     app.logger.critical(f"Model loading failed: {e}")
     raise
@@ -82,16 +85,16 @@ def predict():
         if not text:
             return jsonify({"error": "Text cannot be empty"}), 400
             
-        features = vectorizer.transform([text])
-        prediction = model.predict(features)[0]
-        confidence = float(model.predict_proba(features).max())
+        result = sentiment_analyzer(text)[0]
+        prediction = result['label'].lower().replace("positive", "1").replace("negative", "0")
+        confidence = float(result['score'])
         
         app.logger.info(f"Successful prediction for text: {text[:50]}...")
         
         return jsonify({
-            'sentiment': str(prediction),
+            'sentiment': prediction,
             'confidence': confidence,
-            'model_version': f"scikit-learn={sklearn.__version__}",
+            'model_version': "distilbert",
             'status': 'success'
         })
     except Exception as e:
@@ -108,7 +111,7 @@ def health_check():
     return jsonify({
         "status": "OK",
         "model_loaded": True,
-        "version": f"scikit-learn={sklearn.__version__}"
+        "version": "distilbert"
     }), 200
 
 @app.route('/swagger.json')
