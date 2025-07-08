@@ -1,5 +1,5 @@
-﻿# Python
-.venv/
+# Python
+venv/
 __pycache__/
 *.py[cod]
 .python-version
