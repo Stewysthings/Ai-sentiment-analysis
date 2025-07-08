@@ -1,5 +1,5 @@
-# Python
-venv/
+﻿# Python
+.venv/
 __pycache__/
 *.py[cod]
 .python-version
@@ -26,3 +26,14 @@ data/
 # System files
 .DS_Store
 Thumbs.db
+
+
+venv/
+__pycache__/
+*.pyc
+logs/
+*.log
+node_modules/
+Dockerfile.*
+dist/
+*.env
