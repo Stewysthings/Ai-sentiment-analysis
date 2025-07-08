@@ -55,11 +55,14 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=Config.SWAGGER_URL)
 try:
     model_path = os.path.join(Config.MODEL_PATH, "distilbert")
     if not os.path.exists(model_path):
+        # Download and save the pre-trained model the first time
         sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
         sentiment_analyzer.save_pretrained(model_path)
+        app.logger.info("Pre-trained transformer model downloaded and saved successfully")
     else:
+        # Load the saved model in future runs
         sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
-    app.logger.info("Transformer model loaded successfully")
+        app.logger.info("Transformer model loaded from saved directory")
 except Exception as e:
     app.logger.critical(f"Model loading failed: {e}")
     raise
