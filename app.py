@@ -46,7 +46,7 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     Config.API_URL,
     config={
         'app_name': "Sentiment Analysis API",
-        'validatorUrl': None
+    
     }
 )
 app.register_blueprint(swaggerui_blueprint, url_prefix=Config.SWAGGER_URL)
