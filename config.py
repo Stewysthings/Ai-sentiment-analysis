@@ -7,14 +7,15 @@ load_dotenv()
 class Config:
     # Required configuration with validation
     MODEL_PATH = Path(os.getenv('MODEL_PATH', 'models'))  # Default to 'models' directory
-    VECTORIZER_PATH = Path(os.getenv('VECTORIZER_PATH'))  # Still required for backward compatibility
+    # VECTORIZER_PATH is now optional, commented out since unused with DistilBERT
+    # VECTORIZER_PATH = Path(os.getenv('VECTORIZER_PATH'))
     SECRET_KEY = os.getenv('SECRET_KEY')
 
     # API Keys (with empty set fallback)
     API_KEYS = set(os.getenv('API_KEYS', '').split(',')) if os.getenv('API_KEYS') else set()
 
     # Optional configurations with defaults
-    FLASK_ENV = os.getenv('FLASK_ENV', 'production')
+    FLASK_ENV = os.getenv('FLASK_ENV', 'development')
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
     SWAGGER_URL = '/docs'         # URL to access Swagger UI
@@ -26,7 +27,6 @@ class Config:
         """Validate required configurations"""
         required = {
             'MODEL_PATH': cls.MODEL_PATH,
-            'VECTORIZER_PATH': cls.VECTORIZER_PATH,
             'SECRET_KEY': cls.SECRET_KEY
         }
 
@@ -41,10 +41,6 @@ class Config:
                 print(f"Created directory: {cls.MODEL_PATH}")
             except Exception as e:
                 raise FileNotFoundError(f"Cannot create directory {cls.MODEL_PATH}: {e}")
-
-        # Optional: Remove VECTORIZER_PATH validation if no longer needed
-        # if not cls.VECTORIZER_PATH.exists():
-        #     raise FileNotFoundError(f"Vectorizer file not found at {cls.VECTORIZER_PATH}")
 
         if not cls.API_KEYS:
             print("Warning: No API keys configured - authentication disabled")
