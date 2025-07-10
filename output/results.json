@@ -1,0 +1,16 @@
+[
+  {
+    "text": "I love this project",
+    "sentiment": "1",
+    "confidence": 0.999884843826294,
+    "model_version": "distilbert",
+    "status": "success"
+  },
+  {
+    "text": "I hate this project",
+    "sentiment": "0",
+    "confidence": 0.9997361302375793,
+    "model_version": "distilbert",
+    "status": "success"
+  }
+]
