@@ -10,12 +10,12 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",  // Change from "Node" to "bundler"
+    "moduleResolution": "bundler",  // Ensured to be "bundler"
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "allowImportingTsExtensions": true  // Already added
+    "allowImportingTsExtensions": true
   },
   "include": ["src"],
   "references": [{"path": "./tsconfig.node.json"}]

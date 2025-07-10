@@ -2,10 +2,10 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",  // Match the main tsconfig
     "allowSyntheticDefaultImports": true,
     "noEmit": false,
-    "types": ["node"]  // Now resolved with @types/node
+    "types": ["node", "rollup"]  // Add "rollup" to include Rollup types
   },
   "include": ["vite.config.ts"]
 }
