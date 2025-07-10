@@ -1,16 +1,36 @@
-﻿import logging
+import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask, request, jsonify, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
 import os
-from transformers import pipeline
-from config import Config
-from flask_cors import CORS  # New import
+from transformers import pipeline  # type: ignore
 
-# Initialize Flask app
+# Add pip install transformers to requirements.txt or run:
+# pip install transformers
+from config import Config
+from flask_cors import CORS  # type: ignore
+# pip install flask-cors
+
+try:
+    from waitress import serve  # type: ignore
+except ImportError:
+    pass
+
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)  # Enable CORS for all routes
+# Replace the simple CORS(app) with more specific configuration
+CORS(app, 
+     origins=Config.ALLOWED_ORIGINS if hasattr(Config, 'ALLOWED_ORIGINS') else ['http://localhost:3000'],
+     methods=['GET', 'POST'],
+     allow_headers=['Content-Type', 'X-API-KEY'])
+
+# Add security headers
+@app.after_request
+def after_request(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 # ===== Logging Configuration =====
 def configure_logging():
@@ -32,8 +52,9 @@ def configure_logging():
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
 
-    app.logger.addHandler(file_handler)
-    app.logger.addHandler(console_handler)
+    if not app.logger.handlers:
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(console_handler)
     app.logger.setLevel(logging.INFO)
 
 configure_logging()
@@ -47,18 +68,23 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 app.register_blueprint(swaggerui_blueprint, url_prefix=Config.SWAGGER_URL)
 
 # ===== Model Loading =====
-try:
-    model_path = os.path.join(Config.MODEL_PATH, "distilbert")
-    if not os.path.exists(model_path):
-        sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-        sentiment_analyzer.save_pretrained(model_path)
-        app.logger.info("Pre-trained transformer model downloaded and saved successfully")
-    else:
-        sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
-        app.logger.info("Transformer model loaded from saved directory")
-except Exception as e:
-    app.logger.critical(f"Model loading failed: {e}")
-    raise
+def load_model():
+    """Load sentiment analysis model with proper error handling"""
+    try:
+        model_path = os.path.join(Config.MODEL_PATH, "distilbert")
+        if not os.path.exists(model_path):
+            sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+            sentiment_analyzer.save_pretrained(model_path)
+            app.logger.info("Pre-trained transformer model downloaded and saved successfully")
+        else:
+            sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
+            app.logger.info("Transformer model loaded from saved directory")
+        return sentiment_analyzer
+    except Exception as e:
+        app.logger.critical(f"Model loading failed: {e}")
+        return None
+
+sentiment_analyzer = load_model()
 
 # ===== API Endpoints =====
 @app.route('/')
@@ -69,19 +95,38 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     """Endpoint for sentiment analysis predictions"""
+    import hashlib
+    
     api_key = request.headers.get('X-API-KEY')
     if not api_key or api_key not in Config.API_KEYS:
         app.logger.warning(f"Unauthorized access attempt with key: {api_key}")
         return jsonify({"error": "Invalid API key"}), 401
 
     try:
-        text = request.json.get('text', '').strip()
+        # Enhanced input validation
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON payload"}), 400
+            
+        text = data.get('text', '').strip()
         if not text:
             return jsonify({"error": "Text cannot be empty"}), 400
+            
+        # Add text length validation
+        if len(text) > 5000:  # Reasonable limit
+            return jsonify({"error": "Text too long (max 5000 characters)"}), 400
 
-        result = sentiment_analyzer(text)[0]
-        prediction = result['label'].lower().replace("positive", "1").replace("negative", "0")
-        confidence = float(result['score'])
+        # Check if model is available
+        if sentiment_analyzer is None:
+            return jsonify({"error": "Model not available"}), 503
+
+        text_hash = hashlib.md5(text.encode()).hexdigest()
+        result = sentiment_analyzer(text)
+        prediction = result[0]['label'].lower().replace("positive", "1").replace("negative", "0")
+        confidence = float(result[0]['score'])
 
         app.logger.info(f"Successful prediction for text: {text[:50]}...")
 
@@ -113,5 +158,9 @@ def serve_swagger():
     """Serves the Swagger/OpenAPI specification"""
     return send_from_directory(Config.STATIC_FOLDER, 'swagger.json')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=Config.DEBUG)
+
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serves static files from the configured static folder"""
+    return send_from_directory(Config.STATIC_FOLDER, filename)
