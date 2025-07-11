@@ -6,6 +6,8 @@ import os
 from transformers import pipeline  # type: ignore
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Force CPU usage
+import os
+os.environ['PYTHONWARNINGS'] = 'ignore'  # Suppress deprecation warnings
 
 # Add pip install transformers to requirements.txt or run:
 # pip install transformers
