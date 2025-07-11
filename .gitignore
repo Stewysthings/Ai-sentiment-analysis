@@ -1,39 +1,37 @@
-﻿# Python
+﻿### Python ###
+# Virtual environments
 .venv/
+venv/
+ENV/
+
+# Bytecode and cache
 __pycache__/
 *.py[cod]
-#.python-version
-
-# Environment files
-.env
-.env.local
-
-# Data files
-models/*.pkl
-data/
-*.pickle
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
-
-# IDE and editor settings
-.idea/
-.vscode/
-*.swp
-
-# System files
-.DS_Store
-Thumbs.db
-
-
-venv/
-__pycache__/
 *.pyc
-logs/
+.python-version
+.pytest_cache/
+
+### Environment ###
+.env
+.env.*
+!.env.example  # Keep example env template
+
+### Logs ###
 *.log
-node_modules/
-Dockerfile.*
-dist/
-*.env
+logs/
+error.log
+service.log
+
+### Frontend ###
+frontend/dist/
+frontend/node_modules/
+
+### Test files ###
+tests/__pycache__/
+
+### IDE ###
+.vscode/
+.idea/
+
+### Data ###
+data/

@@ -4,6 +4,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
 import os
 from transformers import pipeline  # type: ignore
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Force CPU usage
 
 # Add pip install transformers to requirements.txt or run:
 # pip install transformers
