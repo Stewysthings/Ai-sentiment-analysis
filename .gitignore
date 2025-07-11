@@ -2,7 +2,7 @@
 .venv/
 __pycache__/
 *.py[cod]
-.python-version
+#.python-version
 
 # Environment files
 .env
