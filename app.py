@@ -64,7 +64,11 @@ def configure_logging():
     app.logger.setLevel(logging.INFO)
 
 configure_logging()
-
+# ===== Predict Endpoint Tagging for Editor Integration =====
+# This section is intentionally left blank.
+# Some IDEs or code editors (like VS Code with Copilot or other extensions) may highlight or tag
+# function definitions (such as 'predict') for easier navigation or code intelligence.
+# The "purple cube" and greyed-out area are likely editor UI features to help you identify endpoints.
 # ===== Swagger UI Setup =====
 swaggerui_blueprint = get_swaggerui_blueprint(
     Config.SWAGGER_URL,
