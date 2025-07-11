@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const SentimentAnalyzer: React.FC = () => {
   const [text, setText] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ sentiment?: string; confidence?: number; error?: string } | null>(null);
 
   const analyzeSentiment = async () => {
     try {
