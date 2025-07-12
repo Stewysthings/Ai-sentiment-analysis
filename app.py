@@ -1,12 +1,18 @@
-# ...[unchanged imports and environment setup]...
-
-from flask import Flask, request, jsonify
-sentiment_analyzer = None  # Will be loaded on demand
-from collections import defaultdict
-from transformers import pipeline
+import os
+import time
 import hashlib
+from collections import defaultdict
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from transformers import pipeline
+
+# Global variables
+sentiment_analyzer = None  # Will be loaded on demand
 
 app = Flask(__name__)
+
+# Configure CORS
+CORS(app, origins=['http://localhost:3000', 'http://localhost:5173'])
 
 # Ensure Config is imported or defined
 try:
@@ -21,7 +27,6 @@ prediction_cache = {}
 
 # ===== Helper Functions =====
 def get_analyzer():
-    import os
     global sentiment_analyzer
     if sentiment_analyzer is None:
         try:
@@ -47,7 +52,6 @@ def validate_input(req):
     return {"text": data['text'].strip()}, None
 
 def check_rate_limit(api_key, max_requests=100, window_minutes=60):
-    import time
     now = time.time()
     window_start = now - window_minutes * 60
     # Remove outdated requests
@@ -78,7 +82,7 @@ def get_cached_prediction(text):
 @app.route('/predict', methods=['POST'])
 def predict():
     api_key = request.headers.get('X-API-KEY')
-    if not api_key or api_key not in Config.API_KEYS:
+    if not api_key or api_key not in set(Config.API_KEYS):
         return jsonify({"error": "Unauthorized"}), 401
 
     validation_result, error = validate_input(request)
@@ -108,4 +112,37 @@ def health_check():
         "version": "distilbert"
     })
 
-# ...[unchanged static route and startup block]...
+@app.route('/')
+def index():
+    """Serve the main application page"""
+    return jsonify({
+        "message": "AI Sentiment Analysis API",
+        "version": "1.0.0",
+        "endpoints": {
+            "predict": "/predict",
+            "health": "/health",
+            "docs": "/docs"
+        }
+    })
+
+if __name__ == '__main__':
+    # Initialize configuration
+    config = Config()
+    
+    # Validate configuration in development
+    if not config.IS_PRODUCTION:
+        try:
+            config.validate_config()
+        except ValueError as e:
+            app.logger.warning(f"Configuration validation failed: {e}")
+    
+    # Set Flask configuration
+    app.config['SECRET_KEY'] = config.SECRET_KEY
+    app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
+    
+    # Run the application
+    app.run(
+        host='0.0.0.0',
+        port=config.PORT,
+        debug=not config.IS_PRODUCTION
+    )

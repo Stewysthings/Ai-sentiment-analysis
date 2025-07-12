@@ -11,7 +11,17 @@ from transformers import pipeline
 
 # Load the sentiment analysis pipeline
 model_path = os.path.join(Config.MODEL_PATH, "distilbert")
-sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
+try:
+    if os.path.exists(model_path):
+        sentiment_analyzer = pipeline("sentiment-analysis", model=model_path)
+    else:
+        print(f"Model not found at {model_path}, downloading...")
+        sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+        sentiment_analyzer.save_pretrained(model_path)
+        print(f"Model saved to {model_path}")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    exit(1)
 
 def analyze_batch(input_file: str, output_file: str):
     """Analyze a batch of text from input_file and save results to output_file."""

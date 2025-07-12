@@ -15,7 +15,7 @@ class Config:
         SECRET_KEY = os.urandom(24).hex()
     
     # ===== Model and File Paths =====
-    MODEL_PATH = os.getenv('MODEL_PATH', 'static_models')
+    MODEL_PATH = os.getenv('MODEL_PATH', './models')
     STATIC_FOLDER = os.getenv('STATIC_FOLDER', 'static')
     
     # ===== API Security =====
@@ -37,7 +37,7 @@ class Config:
     ]
     
     # ===== Performance Optimizations =====
-    DEFAULT_PORT = 10000
+    DEFAULT_PORT = 5000  # Changed to match Dockerfile
     DEFAULT_MAX_UPLOAD_SIZE_MB = 16
     MAX_CONTENT_LENGTH = DEFAULT_MAX_UPLOAD_SIZE_MB * 1024 * 1024
     
@@ -49,7 +49,7 @@ class Config:
     @property
     def PORT(self):
         if self._port is None:
-            self._port = int(os.getenv('PORT', 10000))
+            self._port = int(os.getenv('PORT', 5000))  # Changed to match Dockerfile
         return self._port
     
     @property
